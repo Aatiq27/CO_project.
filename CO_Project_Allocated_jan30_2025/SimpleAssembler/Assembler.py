@@ -320,3 +320,29 @@ if error == False:
                     imm = '1' * (13 - len(imm)) + imm  # Fill leading bits with 1s for negative offset
                 else:
                     imm = bin(offset)[2:].zfill(13)  # Convert positive offset to binary and pad with zeros if necessary
+data = imm
+            temp_binary += data[0]
+            for i in range(2, 8):
+                temp_binary += data[i]
+            temp_binary += Register_enco[it.tokens_in_ins[2]]
+            temp_binary += Register_enco[it.tokens_in_ins[1]]
+            temp_binary += funct3[it.tokens_in_ins[0]]
+            for i in range(8, 12):
+                temp_binary += data[i]
+            temp_binary += data[1]
+            temp_binary += opcode[it.tokens_in_ins[0]]
+        elif ins_type[it.tokens_in_ins[0]] == "U":
+            if it.tokens_in_ins[2] in label:
+                offset = it.index - label[it.tokens_in_ins[2]]
+                data = bin(offset)[2:].zfill(32)
+            else:
+                offset = int(it.tokens_in_ins[2])
+                if offset < 0:
+                    imm = bin(offset & 0xFFF)[3:]  # Take the least significant 12 bits for negative offsets
+                    imm = '1' * (32 - len(imm)) + imm  # Fill leading bits with 1s for negative offset
+                else:
+                    imm = bin(offset)[2:].zfill(32)  # Convert positive offset to binary and pad with zeros if necessary
+            data = imm[0:20]
+            temp_binary += data
+            temp_binary += Register_enco[it.tokens_in_ins[1]]
+            temp_binary += opcode[it.tokens_in_ins[0]]
