@@ -320,7 +320,7 @@ if error == False:
                     imm = '1' * (13 - len(imm)) + imm  # Fill leading bits with 1s for negative offset
                 else:
                     imm = bin(offset)[2:].zfill(13)  # Convert positive offset to binary and pad with zeros if necessary
-data = imm
+            data = imm
             temp_binary += data[0]
             for i in range(2, 8):
                 temp_binary += data[i]
@@ -346,3 +346,113 @@ data = imm
             temp_binary += data
             temp_binary += Register_enco[it.tokens_in_ins[1]]
             temp_binary += opcode[it.tokens_in_ins[0]]
+elif ins_type[it.tokens_in_ins[0]] == "J":
+            data = ""
+            if it.tokens_in_ins[2] in label:
+                offset = label[it.tokens_in_ins[2]] - it.index
+                if offset < 0:
+                    imm = bin(offset & 0xFFF)[3:]  # Take the least significant 12 bits for negative offsets
+                    imm = '1' * (21 - len(imm)) + imm  # Fill leading bits with 1s for negative offset
+                else:
+                    imm = bin(offset)[2:].zfill(21)  # Convert positive offset to binary and pad with zeros if necessary
+            else:
+                offset = int(it.tokens_in_ins[2])
+                if offset < 0:
+                    imm = bin(offset & 0xFFF)[3:]  # Take the least significant 12 bits for negative offsets
+                    imm = '1' * (21 - len(imm)) + imm  # Fill leading bits with 1s for negative offset
+                else:
+                    imm = bin(offset)[2:].zfill(21)  # Convert positive offset to binary and pad with zeros if necessary
+            data = imm
+            temp_binary += data[0]
+            for i in range(10,20):
+                temp_binary += data[i]
+            temp_binary += data[9]
+            for i in range(1, 9):
+                temp_binary += data[i]
+            temp_binary += Register_enco[it.tokens_in_ins[1]]
+            temp_binary += opcode[it.tokens_in_ins[0]]
+        elif ins_type[it.tokens_in_ins[0]] == "S":
+            if it.tokens_in_ins[2] in label:
+                    offset = it.index - label[it.tokens_in_ins[2]]
+                    data = bin(offset)[2:].zfill(12)
+            else:
+                offset = int(it.tokens_in_ins[2])
+                if offset < 0:
+                    imm = bin(offset & 0xFFF)[3:]  # Take the least significant 12 bits for negative offsets
+                    imm = '1' * (12 - len(imm)) + imm  # Fill leading bits with 1s for negative offset
+                else:
+                    imm = bin(offset)[2:].zfill(12)  # Convert positive offset to binary and pad with zeros if necessary
+            for i in range(7):
+                temp_binary += imm[i]
+            temp_binary += Register_enco[it.tokens_in_ins[1]]
+            temp_binary += Register_enco[it.tokens_in_ins[3]]
+            temp_binary += funct3[it.tokens_in_ins[0]]
+            for i in range(7, 12):
+                temp_binary += imm[i]
+            temp_binary += opcode[it.tokens_in_ins[0]]
+        elif ins_type[it.tokens_in_ins[0]] == "I":
+            data = ""
+            if it.tokens_in_ins[0] == "lw":
+                if it.tokens_in_ins[2] in label:
+                    offset = it.index - label[it.tokens_in_ins[2]]
+                    data = bin(offset)[2:].zfill(12)
+                else:
+                    offset = int(it.tokens_in_ins[2])
+                    if offset < 0:
+                        imm = bin(offset & 0xFFF)[3:]  # Take the least significant 12 bits for negative offsets
+                        imm = '1' * (12 - len(imm)) + imm  # Fill leading bits with 1s for negative offset
+                    else:
+                        imm = bin(offset)[2:].zfill(12)  # Convert positive offset to binary and pad with zeros if necessary
+                temp_binary += imm
+                temp_binary += Register_enco[it.tokens_in_ins[3]]
+                temp_binary += funct3[it.tokens_in_ins[0]]
+                temp_binary += Register_enco[it.tokens_in_ins[1]]
+                temp_binary += opcode[it.tokens_in_ins[0]]
+            elif it.tokens_in_ins[0] == "jalr" or it.tokens_in_ins[0] == "addi" or it.tokens_in_ins[0] == "sltiu":
+                if it.tokens_in_ins[3] in label:
+                    offset = it.index - label[it.tokens_in_ins[3]]
+                    data = bin(offset)[2:].zfill(21)
+                else:
+                    offset = int(it.tokens_in_ins[3])
+                    if offset < 0:
+                        imm = bin(offset & 0xFFF)[3:]  # Take the least significant 12 bits for negative offsets
+                        imm = '1' * (12 - len(imm)) + imm  # Fill leading bits with 1s for negative offset
+                    else:
+                        imm = bin(offset)[2:].zfill(12)  # Convert positive offset to binary and pad with zeros if necessary
+                temp_binary += imm
+                temp_binary += Register_enco[it.tokens_in_ins[2]]
+                temp_binary += funct3[it.tokens_in_ins[0]]
+                temp_binary += Register_enco[it.tokens_in_ins[1]]
+                temp_binary += opcode[it.tokens_in_ins[0]]
+        # Additional Instructions
+        elif ins_type[it.tokens_in_ins[0]] == "A":
+            if it.tokens_in_ins[0] == "mul":
+                temp_binary += "0000000"
+                temp_binary += Register_enco[it.tokens_in_ins[3]]
+                temp_binary += Register_enco[it.tokens_in_ins[2]]
+                temp_binary += "000"
+                temp_binary += Register_enco[it.tokens_in_ins[1]]
+                temp_binary += "0000001"
+            elif it.tokens_in_ins[0] == "rst":
+                temp_binary += "0000000"
+                temp_binary += "00000"
+                temp_binary += "00000"
+                temp_binary += "000"
+                temp_binary += "00000"
+                temp_binary += "0000010"
+            elif it.tokens_in_ins[0] == "halt":
+                temp_binary += "0000000"
+                temp_binary += "00000"
+                temp_binary += "00000"
+                temp_binary += "000"
+                temp_binary += "00000"
+                temp_binary += "0000011"
+            elif it.tokens_in_ins[0] == "rvrs":
+                temp_binary += "0000000"
+                temp_binary += "00000"
+                temp_binary += Register_enco[it.tokens_in_ins[2]]
+                temp_binary += "000"
+                temp_binary += Register_enco[it.tokens_in_ins[1]]
+                temp_binary += "0000100"
+        file2.write(temp_binary + "\n")
+file2.close()
