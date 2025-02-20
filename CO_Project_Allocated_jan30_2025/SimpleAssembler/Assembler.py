@@ -256,6 +256,7 @@ register_storage = {
     "t5": 0,
     "t6": 0
 }
+
 program = []
 file = open(f"{sys.argv[1]}", "r")
 line = file.readline()
@@ -346,7 +347,7 @@ if error == False:
             temp_binary += data
             temp_binary += Register_enco[it.tokens_in_ins[1]]
             temp_binary += opcode[it.tokens_in_ins[0]]
-elif ins_type[it.tokens_in_ins[0]] == "J":
+        elif ins_type[it.tokens_in_ins[0]] == "J":
             data = ""
             if it.tokens_in_ins[2] in label:
                 offset = label[it.tokens_in_ins[2]] - it.index
