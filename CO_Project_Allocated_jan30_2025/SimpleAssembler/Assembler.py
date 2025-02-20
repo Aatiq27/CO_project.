@@ -256,3 +256,67 @@ register_storage = {
     "t5": 0,
     "t6": 0
 }
+program = []
+file = open(f"{sys.argv[1]}", "r")
+line = file.readline()
+while line:
+    program.append(PC(line.strip()))
+    line = file.readline()
+file.close()
+error = False
+label = {}
+for it in program:
+    it.covert_to_tokens()
+    print(it.index, it.tokens_in_ins)
+for it in program:
+    if ((it.tokens_in_ins[0])[len(it.tokens_in_ins[0]) - 1] == ':'):
+        label[it.tokens_in_ins[0][:len(it.tokens_in_ins[0]) - 1]] = it.index
+        print(it.tokens_in_ins[0][:len(it.tokens_in_ins[0]) - 1], "   " ,it.index)
+        it.tokens_in_ins.pop(0)
+    else:
+        
+        temp = ins_type[it.tokens_in_ins[0]]
+        print(temp)
+        if temp != 'R' and temp != "S" and temp != "U" and temp != "I" and temp != "B" and temp != "J" and temp != "A":
+            error = True
+            print("Error in the instruction at Line", it.index / 4)
+            break
+for it in label:
+    print(it, label[it])
+file2 = open(f"{sys.argv[2]}", "w")
+for it in program:
+    if (error != True) and (it.check_and_correct(ins_type, Register_enco, label) == False):
+        error = True
+        print("Error in the instruction at Line", it.index / 4)
+        break
+if error == False:
+    if error == False and program[len(program) - 1].tokens_in_ins[0] != "beq" and program[len(program) - 1].tokens_in_ins[1] != "zero" and program[len(program) - 1].tokens_in_ins[2] != "zero" and program[len(program) - 1].tokens_in_ins[3] != "0":
+        error = True
+        print("ERROR : beq zero,zero,0 -- Missing from program")
+if error == False:
+    for it in program:
+        temp_binary = ""
+        if ins_type[it.tokens_in_ins[0]] == "R":
+            temp_binary += funct7[it.tokens_in_ins[0]]
+            temp_binary += Register_enco[it.tokens_in_ins[3]]
+            temp_binary += Register_enco[it.tokens_in_ins[2]]
+            temp_binary += funct3[it.tokens_in_ins[0]]
+            temp_binary += Register_enco[it.tokens_in_ins[1]]
+            temp_binary += opcode[it.tokens_in_ins[0]]
+        elif ins_type[it.tokens_in_ins[0]] == "B":
+            data = ""
+            if it.tokens_in_ins[3] in label:
+                offset = label[it.tokens_in_ins[3]] - it.index
+                offset = int(offset)
+                if offset < 0:
+                    imm = bin(offset & 0xFFF)[3:]  # Take the least significant 12 bits for negative offsets
+                    imm = '1' * (13 - len(imm)) + imm  # Fill leading bits with 1s for negative offset
+                else:
+                    imm = bin(offset)[2:].zfill(13)  # Convert positive offset to binary and pad with zeros if necessary
+            else:
+                offset = int(it.tokens_in_ins[3])
+                if offset < 0:
+                    imm = bin(offset & 0xFFF)[3:]  # Take the least significant 12 bits for negative offsets
+                    imm = '1' * (13 - len(imm)) + imm  # Fill leading bits with 1s for negative offset
+                else:
+                    imm = bin(offset)[2:].zfill(13)  # Convert positive offset to binary and pad with zeros if necessary
